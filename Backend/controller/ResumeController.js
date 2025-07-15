@@ -2,7 +2,7 @@ import Resume from '../models/resumeModel.js'
 import fs from 'fs'
 import path from 'path';
 
-export const createResum=async (req,res)=>{
+export const createResume=async (req,res)=>{
     try {
         const {title}=req.body;
         // DEFAULT TEMPALTE 
