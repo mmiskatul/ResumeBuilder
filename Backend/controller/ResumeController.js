@@ -1,5 +1,6 @@
 import Resume from '../models/resumeModel.js'
-
+import fs from 'fs'
+import path from 'path';
 
 export const createResum=async (req,res)=>{
     try {
@@ -123,3 +124,45 @@ export const updateResume=async (req,res)=>{
     }
 }
 // DELETE RESUME FUNCTION 
+export const deleteResume=async (req,res)=>{
+    try {
+        const resume=await Resume.findOne({
+            _id :req.params.id,
+            userId:req.user._id
+        })
+         if(!resume){
+            return res.status(404).json({massage : " The Resume not Found "})
+        }
+        // CREATE UPLOAD FLODER AND STORE THE RESUME 
+        const uploadFolder =path.join(process.cwd(),'uploads');
+
+        // DELETE THUMBAIL FUNCTION 
+
+        if(resume.thumbnailLink){
+            const oldthumbail=path.join(uploadFolder,path.basename(resume.thumbnailLink))
+            if(fs.existsSync(oldthumbail)){
+                fs.unlinkSync(oldthumbail);
+            }
+        }
+        if(resume.profileInfo?.profilePreviewUrl){
+            const oldprofile=path.join(
+                uploadFolder,
+                path.basename(resume.profileInfo.profilePreviewUrl) 
+            )
+              if(fs.existsSync(oldprofile)){
+                fs.unlinkSync(oldprofile);
+            }
+        }
+        // DELETE RESUME DOC
+        const deleted =await Resume.findOneAndDelete({
+            _id :req.params.id,
+            userId:req.user._id
+        })
+        if(!deleted){
+            return res.status(404).json({massage :"Resume Not Found or not authorized"})
+        }
+        res.json({massage:"Resume Delete succefully "})
+    } catch (error) {
+         res.status(500).json({massage :"Failed to Update resume",error: error.massage})  
+    }
+}
